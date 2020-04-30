@@ -21,6 +21,8 @@ public class App extends Application {
     private static final String DATABASE_URI = "mongodb://root:MJ5SMF8L4sY7@127.0.0.1:27017/bitnami_parse";
     //jPZebH4UJLD5
 
+
+
     public ArrayList<Applicant> applicants;
 
     public ArrayList<Applicant> getApplicants() {
@@ -34,6 +36,8 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+
 
         Log.i("PARSE", "Initializing...");
         Parse.enableLocalDatastore(getApplicationContext());

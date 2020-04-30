@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     ListView lv_applications;
 
-    TextView tv_totalTeamNumber, tv_totalApplication, tv_AndroidApps, tv_IOSApps;
+    TextView tv_totalTeamNumber, tv_totalApplication, tv_AndroidApps, tv_IOSApps ,tv_pandemiOncesi,tv_pandemiSırası,tv_pandemiSonrası;
 
     Button bt_NoTestSolvedList, bt_allapplications;
 
@@ -65,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     App app;
 
+    int p = 0;
+    int d = 0;
+    int a = 0;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +99,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_AndroidApps = findViewById(R.id.tv_AndroidApps);
         tv_IOSApps = findViewById(R.id.tv_IOSApps);
 
+        tv_pandemiSonrası = findViewById(R.id.tv_pandemiSonrası);
+        tv_pandemiSırası = findViewById(R.id.tv_pandemiSırası);
+        tv_pandemiOncesi = findViewById(R.id.tv_pandemiOncesi);
+
         lv_applications = findViewById(R.id.lv_applications);
 
         list_android_applications = new ArrayList<>();
@@ -105,6 +113,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         applicationAdapter = new ApplicationAdapter(this, R.layout.listview_item_applications, list_all_applications);
         lv_applications.setAdapter(applicationAdapter);
+
+    }
+
+    private void setScenarioCount(int p, int d, int a){
+
+        tv_pandemiOncesi.setText(p + "");
+        tv_pandemiSırası.setText(d + "");
+        tv_pandemiSonrası.setText(a + "");
+
+    }
+
+    private void calScenarioCount(){
+
+
+//        Android
+        for(ParseObject applicant : list_android_applications){
+            String scenario = applicant.get("scenario") + "";
+
+            if(scenario.toLowerCase().equals("pandemi öncesi")){p++;
+            }else if(scenario.toLowerCase().equals("pandemi sırası")){d++;}
+            else if(scenario.toLowerCase().equals("pandemi sonrası")){a++;}
+        }
+
+//        IoS
+        for(ParseObject applicant : list_IOS_applications){
+            String scenario = applicant.get("select_application_object_id") + "";
+
+            if(scenario.equals("iRinQb0MFb")){a++;
+            }else if(scenario.equals("geF9XjGHcA")){d++;}
+            else if(scenario.equals("NmHmsZVnD1")){p++;}
+        }
+
+        setScenarioCount(p,d,a);
 
     }
 
@@ -161,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     SetNumbers();
                     RetrieveAllDetails();
                     RetrieveUsers();
+                    calScenarioCount();
 //                    RetrieveApplicationsWithoutTestSolved();
 
                 }
@@ -495,7 +537,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.post(runnable);
 
         }
-
 
     public void export(ArrayList<Applicant> applicants) {
         //generate data
