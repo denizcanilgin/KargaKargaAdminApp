@@ -5,11 +5,15 @@ import androidx.core.content.FileProvider;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +29,9 @@ import com.example.kkadmin2.Adapters.ApplicationAdapter;
 import com.example.kkadmin2.App;
 import com.example.kkadmin2.Models.Applicant;
 import com.example.kkadmin2.R;
+import com.example.kkadmin2.TinyDB.TinyDB;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.LogInCallback;
@@ -39,8 +46,10 @@ import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -55,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     ListView lv_applications;
 
-    TextView tv_totalTeamNumber, tv_totalApplication, tv_AndroidApps, tv_IOSApps ,tv_pandemiOncesi,tv_pandemiSırası,tv_pandemiSonrası;
+    TextView tv_totalTeamNumber, tv_totalApplication, tv_AndroidApps, tv_IOSApps ,tv_pandemiOncesi,tv_pandemiSırası,tv_pandemiSonrası,tv_universityNumber;
 
     Button bt_NoTestSolvedList, bt_allapplications;
 
@@ -68,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int p = 0;
     int d = 0;
     int a = 0;
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +86,65 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         app = (App) getApplication();
 
         init();
-        LoginAdmin();
+
+
+        RetrieveAndroidApplications();
+
+
+
+
+    }
+
+    private boolean checkLocalsIsEmpty(String key, Boolean type){
+
+        if(retrieveLocalDB(key,type) != null) {
+            return true;
+        }else
+            return false;
+
+    }
+
+
+    private void saveToLocalDB(String key, ArrayList list){
+
+        Gson gson = new Gson();
+        String json = gson.toJson(list);
+
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getApplicationContext());
+        SharedPreferences.Editor prefsEditor = appSharedPrefs.edit();
+        prefsEditor.putString(key, json);
+        prefsEditor.commit();
+
+        Log.d("TAG","key = " + json);
+    }
+
+    private ArrayList retrieveLocalDB(String key, boolean type) {
+
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getApplicationContext());
+        Gson gson = new Gson();
+        String json = appSharedPrefs.getString(key, "");
+
+
+        Type typex = null;
+        if (type) {
+            typex = new TypeToken<List<Applicant>>() {
+            }.getType();
+            ArrayList<Applicant> applicantsApp = gson.fromJson(json, typex);
+            return applicantsApp;
+
+
+        } else {
+            typex = new TypeToken<List<ParseObject>>() {
+            }.getType();
+            ArrayList<ParseObject> applicantsParse = gson.fromJson(json, typex);
+            return applicantsParse;
+
+        }
+
+
+
 
     }
 
@@ -98,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_totalTeamNumber = findViewById(R.id.tv_totalTeamNumber);
         tv_AndroidApps = findViewById(R.id.tv_AndroidApps);
         tv_IOSApps = findViewById(R.id.tv_IOSApps);
+//        tv_universityNumber = findViewById(R.id.tv_universityNumber);
 
         tv_pandemiSonrası = findViewById(R.id.tv_pandemiSonrası);
         tv_pandemiSırası = findViewById(R.id.tv_pandemiSırası);
@@ -159,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (e == null) {
 
                     Log.i("SUCCEED", "" + objects.size());
-                    RetrieveIOSApplications();
+
 
                     for (ParseObject object : objects) {
 
@@ -168,6 +236,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         applicationAdapter.notifyDataSetChanged();
 
                     }
+
+                    RetrieveIOSApplications();
+
+//                    saveToLocalDB("db_list_android_applications",list_android_applications);
 
 
                 } else {
@@ -199,11 +271,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
 
+                    saveToLocalDB("db_list_all_applications",list_all_applications);
+
                     SetNumbers();
                     RetrieveAllDetails();
                     RetrieveUsers();
                     calScenarioCount();
-//                    RetrieveApplicationsWithoutTestSolved();
+                   // RetrieveApplicationsWithoutTestSolved();
 
                 }
             }
@@ -297,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     iv_loading.clearAnimation();
 //                    iv_loading.setVisibility(View.INVISIBLE);
                     iv_loading.setImageResource(R.drawable.ic_done_all_black_24dp);
-
+                    makeSound();
                     iv_loading.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -322,7 +396,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // Hooray! The user is logged in.
 
                     Log.i("LOGGED IN","SUCCEED");
-                    RetrieveAndroidApplications();
 
 
                 } else {
@@ -416,8 +489,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                public void done(List<ParseUser> objects, ParseException e) {
                    if (e == null) {
 
-
-
                        if(objects.size() > 0) {
                            Log.i("EMAIL",   ":" + objects.get(0).get("custom_email"));
 
@@ -459,8 +530,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                }
 
+                               if (e == null && objects.size() > 1 &&  str_university[0].length() < 3) {
+                                   if (objects.get(1).get("university") != null)
+                                       str_university[0] = str_university[0] + "" +  objects.get(1).get("university").toString();
+                                   if (objects.get(1).get("faculty") != null)
+                                       str_department[0] =  str_university[0]  + (String) objects.get(1).get("faculty");
 
-                               ParseQuery<ParseObject> query_community = ParseQuery.getQuery("community_info");
+                               }
+
+                               if (e == null && objects.size() > 2 && str_university[0].length() < 3) {
+                                   if (objects.get(2).get("university") != null)
+                                       str_university[0] = str_university[0] + "" +   objects.get(2).get("university").toString();
+                                   if (objects.get(2).get("faculty") != null)
+                                       str_department[0] =  str_university[0] +  (String) objects.get(2).get("faculty");
+                               }
+
+
+                                   ParseQuery<ParseObject> query_community = ParseQuery.getQuery("community_info");
                                query_community.whereEqualTo("userId", finalStr_userId2);
                                query_community.findInBackground(new FindCallback<ParseObject>() {
                                    @Override
@@ -506,7 +592,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                            list_applicant.add(applicant1);
                                                            app.setApplicants(list_applicant);
                                                            Log.i("SIZE_APPLICANT", "" + list_applicant.size());
-
+                                                           saveToLocalDB("db_list_applicant",list_applicant);
 
 
                                                        }
@@ -531,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                }
            });
                     // do something
-                    handler.postDelayed(this, 70L);  // 1 second delay
+                    handler.postDelayed(this, 150L);  // 1 second delay
                 }
             };
             handler.post(runnable);
@@ -578,7 +664,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             strUSERNAME = applicants.get(i).getFULLNAME().trim();
             strUSERID = applicants.get(i).getUSERID().trim();
             strSCENARIO = applicants.get(i).getSCENARIO().trim();
+
             strUNIVERSITY = applicants.get(i).getUNIVERSITY().trim();
+
+
             strDepartment = applicants.get(i).getDEPARTMENT().trim();
             strEMAIL = applicants.get(i).getEMAIL().trim();
             strPHONE = applicants.get(i).getPHONE().trim();
@@ -661,7 +750,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-
     @Override
     public void onClick(View v) {
 
@@ -669,11 +757,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.bt_notestsolvedlist:
 
-                Toast.makeText(getApplicationContext(), "asdasd", 0).show();
+//                Toast.makeText(getApplicationContext(), "asdasd", 0).show();
 
                 break;
 
 
+        }
+
+    }
+
+    private void makeSound(){
+
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

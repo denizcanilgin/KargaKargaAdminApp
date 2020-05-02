@@ -37,7 +37,6 @@
                 android:layout_height="32dp"/>
 
         </LinearLayout>
-
         <LinearLayout
             android:background="@color/colorPrimary"
             android:weightSum="4"
@@ -123,6 +122,10 @@
 
         </LinearLayout>
         <LinearLayout
+            android:background="#fff"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+        <LinearLayout
             android:background="@color/colorPrimary"
             android:weightSum="6"
             android:padding="15dp"
@@ -178,6 +181,11 @@
                 android:layout_height="wrap_content"/>
 
         </LinearLayout>
+        <LinearLayout
+            android:background="#fff"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
 
 
         <ListView
