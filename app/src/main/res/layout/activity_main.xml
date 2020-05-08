@@ -20,7 +20,17 @@
             android:weightSum="6"
             android:layout_height="wrap_content">
 
+            <ImageView
+                android:layout_weight="1"
+                android:id="@+id/iv_recalculateTypo"
+                android:layout_gravity="center"
+                android:layout_marginTop="1dp"
+                android:src="@drawable/ic_autorenew_black_24dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"/>
+
             <TextView
+                android:textAlignment="center"
                 android:layout_weight="5"
                 android:textColor="#fff"
                 android:textSize="24dp"

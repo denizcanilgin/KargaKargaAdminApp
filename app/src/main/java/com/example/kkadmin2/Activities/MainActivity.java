@@ -221,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ParseQuery<ParseObject> query_android = ParseQuery.getQuery("FujiFilmApplications");
         query_android.setLimit(10000);
+        query_android.orderByAscending("createdAt");
         query_android.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
@@ -256,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ParseQuery<ParseObject> query_ios = ParseQuery.getQuery("Applications_competition");
         query_ios.setLimit(10000);
+        query_ios.orderByAscending("createdAt");
         query_ios.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
@@ -334,12 +336,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         final int[] i = {0};
 
-        for (final ParseObject applicant : list_all_applications) {
+        for (int a = 0 ; a < list_all_applications.size() ; a++) {
             String str_userId = "";
-            if (applicant.get("userId") != null)
-                str_userId = applicant.get("userId").toString();
+            if (list_all_applications.get(a).get("userId") != null)
+                str_userId = list_all_applications.get(a).get("userId").toString();
             else
-                str_userId = applicant.get("user_id").toString();
+                str_userId = list_all_applications.get(a).get("user_id").toString();
 
              ParseQuery<ParseUser> query = ParseUser.getQuery();
              query.whereEqualTo("userId", str_userId);
@@ -372,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    iv_loading.setVisibility(View.INVISIBLE);
                     iv_loading.setImageResource(R.drawable.ic_done_all_black_24dp);
                     makeSound();
-                    iv_loading.setOnClickListener(new View.OnClickListener() {
+                    iv_loading.setOnClickListener( new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
 
@@ -413,15 +415,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         final int[] i = {0};
 
-
-
             final Handler handler = new Handler();
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     i[0]++;
 
-                    if(i[0] == list_all_applications.size())
+                    if(i[0] == 500)
 
                     {
                         myHandler.sendEmptyMessage(DO_UPDATE_TEXT);
@@ -440,6 +440,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final String[] str_title = {""};
             final String[] str_community = {""};
             final String[] str_phone = {""};
+                    final String[] edu = {""};
+                    final String[] bd = {""};
+                    final String[] gender = {""};
 
             if (applicant.get("userId") != null)
                 str_userId = applicant.get("userId").toString();
@@ -505,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                            if(str_email[0].length() < 3)
                                if(objects.get(0).get("custom_email") != null)
-                                    str_email[0] = objects.get(0).get("custom_email").toString();
+                                    str_email[0] = str_email[0] + objects.get(0).get("custom_email").toString();
 
                            if (objects.get(0).get("title") != null)
                                str_title[0] = objects.get(0).get("title").toString();
@@ -545,8 +548,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                        str_department[0] =  str_university[0] +  (String) objects.get(2).get("faculty");
                                }
 
-
-                                   ParseQuery<ParseObject> query_community = ParseQuery.getQuery("community_info");
+                               ParseQuery<ParseObject> query_community = ParseQuery.getQuery("community_info");
                                query_community.whereEqualTo("userId", finalStr_userId2);
                                query_community.findInBackground(new FindCallback<ParseObject>() {
                                    @Override
@@ -555,11 +557,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                            final ArrayList<String> list_coms = new ArrayList<>();
 
-                                           if(objects.size() > 0)
-                                               if(objects.get(0).get("community_name") != null)
-                                                   str_community[0] = objects.get(0).get("community_name").toString();
+//                                            for(ParseObject club : objects){
+//
+//                                                str_community[0] = str_community[0] + "," + club.get("community_name").toString();
+//
+//                                            }
 
-                                               for(ParseObject object : objects){
+                                            for(int i = 0 ; i < objects.size() ; i++){
+
+                                                if(objects.get(i).get("community_name") != null)
+                                                    if(objects.get(i).get("community_name").toString().length() > 2)
+                                                        str_community[0] = str_community[0] + objects.get(i).get("community_name").toString()  + "#" ;
+
+                                            }
+
+                                            if(objects.size() > 0)
+                                                str_community[0] = objects.get(0).get("community_name").toString();
+
+
+                                           if(objects.size() > 1)
+                                               str_community[0] = str_community[0] + "/" + objects.get(1).get("community_name").toString();
+
+                                           if(objects.size() > 2)
+                                               str_community[0] = str_community[0] + "/" + objects.get(2).get("community_name").toString();
+
+                                           if(objects.size() > 3)
+                                               str_community[0] = str_community[0] + "/" + objects.get(3).get("community_name").toString();
+
+
+                                           Log.i("COMMMM", "" + str_community[0]);
+
+                                           StringBuilder sb = new StringBuilder(str_community[0]);
+
+
+
+
+                                           for(ParseObject object : objects){
 
                                                    list_coms.add(object.get("community_name").toString());
 
@@ -588,11 +621,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                                            }
 
-                                                           Applicant applicant1 = new Applicant(str_fullname[0], finalStr_userId,str_email[0],str_phone[0],str_title[0],str_university[0], finalStr_scenario, list_coms,completed,str_department[0]);
-                                                           list_applicant.add(applicant1);
-                                                           app.setApplicants(list_applicant);
-                                                           Log.i("SIZE_APPLICANT", "" + list_applicant.size());
-                                                           saveToLocalDB("db_list_applicant",list_applicant);
+                                                           ParseQuery<ParseObject> query_pi = ParseQuery.getQuery("personal_info");
+                                                           query_pi.whereEqualTo("userId", finalStr_userId3);
+                                                           final Boolean finalCompleted = completed;
+                                                           query_pi.findInBackground(new FindCallback<ParseObject>() {
+                                                               @Override
+                                                               public void done(List<ParseObject> objects, ParseException e) {
+                                                                   if(e == null){
+
+                                                                       if(objects.size() > 0){
+
+                                                                           if(!objects.get(0).get("egitim").toString().contains("x"))
+                                                                               edu[0] = objects.get(0).get("egitim") + "";
+                                                                           if(objects.get(0).get("Egitim") != null)
+                                                                               edu[0] = edu[0] + " / "  + objects.get(0).get("Egitim") + "";
+
+                                                                           if(objects.get(0).get("dogum_tarihi") != null)
+                                                                               if(objects.get(0).get("dogum_tarihi").toString().length() > 0)
+                                                                                    bd[0] = objects.get(0).get("dogum_tarihi").toString();
+
+                                                                           if(objects.get(0).get("Cinsiyet") != null)
+                                                                               if(objects.get(0).get("Cinsiyet").toString().length() > 0)
+                                                                                   gender[0] = objects.get(0).get("Cinsiyet").toString();
+
+
+
+                                                                           Log.i("NEW_INFO", " AGE: " + bd[0] + " EDU: " +  edu[0] + " GENDER:  " + gender[0]);
+                                                                           Applicant applicant1 = new Applicant(str_fullname[0], finalStr_userId, bd[0], edu[0], gender[0],str_email[0],str_phone[0],str_title[0],str_university[0], finalStr_scenario, list_coms,str_community[0], finalCompleted,str_department[0]);
+                                                                           list_applicant.add(applicant1);
+                                                                           app.setApplicants(list_applicant);
+                                                                           Log.i("SIZE_APPLICANT", "" + list_applicant.size());
+                                                                           saveToLocalDB("db_list_applicant",list_applicant);
+
+
+                                                                       }
+
+                                                                   }
+                                                               }
+                                                           });
+
 
 
                                                        }
@@ -617,7 +684,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                }
            });
                     // do something
-                    handler.postDelayed(this, 150L);  // 1 second delay
+                    handler.postDelayed(this, 25L);  // 1 second delay
                 }
             };
             handler.post(runnable);
@@ -644,22 +711,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String strUNIVERSITY = "";
         String strDepartment = "";
         String strSCENARIO = "";
-        String strCOMMUNITY1 = "";
-        String strCOMMUNITY2 = "";
-        String strCOMMUNITY3 = "";
-        String strCOMMUNITY4 = "";
+        String strCOMMUNITIES = "";
         String strTITLE = "";
         String strTESTCOMPLETED = "";
 
+        String strGENDER = "";
+        String strBD = "";
+        String strEDUSTATUS = "";
+
         StringBuilder data = new StringBuilder();
-        data.append("USERID,USERNAME,EMAIL,PHONE,TITLE,UNIVERSITY,DEPARTMENT,SCENARIO,COMMUNITY1,COMMUNITY2,COMMUNITY3,COMMUNITY4,TEST COMPLETED");
+        data.append("USERID,USERNAME,EMAIL,PHONE,BIRTH DATE,GENDER,EDU. STATUS,TITLE,UNIVERSITY,DEPARTMENT,SCENARIO,COMMUNITY,TEST COMPLETED");
 
         for (int i = 0; i < applicants.size(); i++) {
 
-            strCOMMUNITY1 = "";
-            strCOMMUNITY2 = "";
-            strCOMMUNITY3 = "";
-            strCOMMUNITY4 = "";
+            strCOMMUNITIES = "";
+
+            strGENDER = applicants.get(i).getGENDER().trim();
+            strBD = applicants.get(i).getAGE().trim();
+            strEDUSTATUS = applicants.get(i).getSTATUS().trim();
 
             strUSERNAME = applicants.get(i).getFULLNAME().trim();
             strUSERID = applicants.get(i).getUSERID().trim();
@@ -675,19 +744,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             strTESTCOMPLETED = applicants.get(i).getTESTCOMPLETED().toString().trim();
 
             Log.i("COMPLETEDD?"," " + strTESTCOMPLETED);
+            Log.i("COMPLETEDD?"," " + strTESTCOMPLETED);
 
-            if(applicants.get(i).getCOMMUNITIES().size() > 0)strCOMMUNITY1 = applicants.get(i).getCOMMUNITIES().get(0);
-            if(applicants.get(i).getCOMMUNITIES().size() > 1)strCOMMUNITY1 = applicants.get(i).getCOMMUNITIES().get(1);
-            if(applicants.get(i).getCOMMUNITIES().size() > 2)strCOMMUNITY1 = applicants.get(i).getCOMMUNITIES().get(2);
-            if(applicants.get(i).getCOMMUNITIES().size() > 3)strCOMMUNITY1 = applicants.get(i).getCOMMUNITIES().get(3);
+
+                        strCOMMUNITIES = applicants.get(i).getSTR_COMMUNITIES();
+
+
+            Log.i("NEW_INFO", " AGE: " + strBD + " EDU: " +  strEDUSTATUS + " GENDER:  " + strGENDER);
+
+
 
 //            if(applicants.get(i).getCOMMUNITIES().size() > 0 )
 ////                for(String title : applicants.get(i).getCOMMUNITIES())
 ////                        strCOMMUNITY = strCOMMUNITY + " / " + title;
 
+            if(strUSERID.contains(","))
+                strUSERID = strUSERID.replace(",","");
+            if(strUSERNAME.contains(","))
+                strUSERNAME = strUSERNAME.replace(",","");
+            if(strEMAIL.contains(","))
+                strEMAIL = strEMAIL.replace(",","");
+            if(strPHONE.contains(","))
+                strPHONE = strPHONE.replace(",","");
+            if(strBD.contains(","))
+                strBD = strBD.replace(",","");
 
-            data.append("\n" + strUSERID + " , " + strUSERNAME + "," + strEMAIL + " , " + strPHONE +" , " + strTITLE + " , " + strUNIVERSITY + "," + strDepartment + "," + strSCENARIO + "," + strCOMMUNITY1 +  " , " + strCOMMUNITY2 +  " , " + strCOMMUNITY3
-                    +  " , " + strCOMMUNITY4 +  " , " + strTESTCOMPLETED);
+            if(strGENDER.contains(","))
+                strGENDER = strGENDER.replace(",","");
+            if(strEDUSTATUS.contains(","))
+                strEDUSTATUS = strEDUSTATUS.replace(",","");
+            if(strTITLE.contains(","))
+                strTITLE = strTITLE.replace(",","");
+
+            if(strUNIVERSITY.contains(","))
+                strUNIVERSITY = strUNIVERSITY.replace(",","");
+
+            if(strDepartment.contains(","))
+                strDepartment = strDepartment.replace(",","");
+            if(strSCENARIO.contains(","))
+                strSCENARIO = strSCENARIO.replace(",","");
+            if(strCOMMUNITIES.contains(","))
+                strCOMMUNITIES = strCOMMUNITIES.replace(",","");
+            if(strSCENARIO.contains(","))
+                strSCENARIO = strSCENARIO.replace(",","");
+
+            data.append("\n" + strUSERID + "," + strUSERNAME + "," + strEMAIL + "," + strPHONE +"," + strBD + "," + strGENDER + "," + strEDUSTATUS +  "," + strTITLE + "," + strUNIVERSITY + "," + strDepartment + "," + strSCENARIO + "," + strCOMMUNITIES + "," + strTESTCOMPLETED);
         }
 
         try {

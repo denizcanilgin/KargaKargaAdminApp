@@ -15,8 +15,45 @@ public class Applicant {
     String UNIVERSITY;
     String DEPARTMENT;
     String SCENARIO;
+    String AGE;
+    String GENDER;
+    String STATUS;
+
+    public String getAGE() {
+        return AGE;
+    }
+
+    public void setAGE(String AGE) {
+        this.AGE = AGE;
+    }
+
+    public String getGENDER() {
+        return GENDER;
+    }
+
+    public void setGENDER(String GENDER) {
+        this.GENDER = GENDER;
+    }
+
+    public String getSTATUS() {
+        return STATUS;
+    }
+
+    public void setSTATUS(String STATUS) {
+        this.STATUS = STATUS;
+    }
+
     Boolean TESTCOMPLETED;
     ArrayList<String> COMMUNITIES;
+    String STR_COMMUNITIES;
+
+    public String getSTR_COMMUNITIES() {
+        return STR_COMMUNITIES;
+    }
+
+    public void setSTR_COMMUNITIES(String STR_COMMUNITIES) {
+        this.STR_COMMUNITIES = STR_COMMUNITIES;
+    }
 
     public String getPHONE() {
         return PHONE;
@@ -50,10 +87,11 @@ public class Applicant {
         this.USERID = USERID;
     }
 
-    public Applicant(String FULLNAME, String USERID, String EMAIL,String PHONE, String TITLE, String UNIVERSITY, String SCENARIO , ArrayList<String> COMMUNITIES,Boolean TESTCOMPLETED,String DEPARTMENT) {
+    public Applicant(String FULLNAME, String USERID,String BD,String EDUSTATUS,String GENDEr, String EMAIL,String PHONE, String TITLE, String UNIVERSITY, String SCENARIO , ArrayList<String> COMMUNITIES,String STR_COMMUNITIES,Boolean TESTCOMPLETED,String DEPARTMENT) {
         this.FULLNAME = FULLNAME;
         this.UNIVERSITY = UNIVERSITY;
         this.COMMUNITIES = COMMUNITIES;
+        this.STR_COMMUNITIES = STR_COMMUNITIES;
         this.SCENARIO = SCENARIO;
         this.USERID = USERID;
         this.TITLE = TITLE;
@@ -61,6 +99,9 @@ public class Applicant {
         this.TESTCOMPLETED = TESTCOMPLETED;
         this.PHONE = PHONE;
         this.DEPARTMENT = DEPARTMENT;
+        this.AGE = BD;
+        this.STATUS = EDUSTATUS;
+        this.GENDER = GENDEr;
     }
 
     public Boolean getTESTCOMPLETED() {
